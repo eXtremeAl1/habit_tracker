@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-import 'app_styles.dart';
+import 'habit_tracker_screen.dart';
+import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  _RegisterScreenState createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _nameController = TextEditingController();
   final _usernameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-  double _age = 25;
+  double _age = 25; // Default age set to 25
   String _country = 'United States';
   List<String> _countries = [];
-
-  final List<String> selectedHabits = [];
-  final List<String> availableHabits = [
+  List<String> selectedHabits = [];
+  List<String> availableHabits = [
     'Wake Up Early',
     'Workout',
     'Drink Water',
@@ -31,7 +28,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     'Sleep 8 Hours',
     'Eat Healthy',
     'Journal',
-    'Walk 10,000 Steps',
+    'Walk 10,000 Steps'
   ];
 
   @override
@@ -40,17 +37,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _fetchCountries();
   }
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _usernameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
   Future<void> _fetchCountries() async {
-    const subsetCountries = [
+    List<String> subsetCountries = [
       'United States',
       'Canada',
       'United Kingdom',
@@ -61,79 +49,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
       'Japan',
       'China',
       'Brazil',
-      'South Africa',
+      'South Africa'
     ];
 
-    final countries = [...subsetCountries]..sort();
-    if (!mounted) return;
-
     setState(() {
-      _countries = countries;
-      _country = _countries.isNotEmpty ? _countries.first : 'United States';
+      _countries = subsetCountries;
+      _countries.sort();
+      _country = _countries.isNotEmpty ? _countries[0] : 'United States';
     });
   }
 
-  // ADDED FOR TASK 2: validate required fields and email format.
-  bool _validateForm() {
-    final email = _emailController.text.trim();
-    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-
-    if (_nameController.text.trim().isEmpty ||
-        _usernameController.text.trim().isEmpty ||
-        email.isEmpty ||
-        _passwordController.text.isEmpty) {
-      _showMessage('Please fill in all required fields.');
-      return false;
-    }
-
-    if (!emailRegex.hasMatch(email)) {
-      _showMessage('Please enter a valid email address.');
-      return false;
-    }
-
-    if (_passwordController.text.length < 6) {
-      _showMessage('Password must contain at least 6 characters.');
-      return false;
-    }
-
-    return true;
+  void _showToast(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
 
-  // ADDED FOR TASK 2/3: persist registration data locally.
-  Future<void> _saveUserData() async {
-    final prefs = await SharedPreferences.getInstance();
+  void _register() async {
+    final name = _nameController.text;
+    final username = _usernameController.text;
 
-    await prefs.setString('user_name', _nameController.text.trim());
-    await prefs.setString('user_username', _usernameController.text.trim());
-    await prefs.setString('user_email', _emailController.text.trim().toLowerCase());
-    await prefs.setString('user_password', _passwordController.text);
-    await prefs.setDouble('user_age', _age);
-    await prefs.setString('user_country', _country);
-    await prefs.setStringList('user_habits', selectedHabits);
-    await prefs.setBool('user_registered', true);
-  }
-
-  // ADDED FOR TASK 2/3: combine validation, storage and navigation.
-  Future<void> _register() async {
-    if (!_validateForm()) return;
-
-    try {
-      await _saveUserData();
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Registration successful. Please log in.')),
-      );
-      Navigator.pushReplacementNamed(context, '/login');
-    } catch (error) {
-      _showMessage('Could not save your account. Please try again.');
+    if (username.isEmpty || name.isEmpty) {
+      _showToast('Please fill in all fields');
+      return;
     }
-  }
 
-  void _showMessage(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HabitTrackerScreen(username: username),
+      ),
     );
   }
 
@@ -141,110 +91,112 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppStyles.primaryBlue,
-        title: const Text('Register', style: AppStyles.title),
+        backgroundColor: Colors.blue.shade700,
+        title: const Text(
+          'Register',
+          style: TextStyle(
+            fontSize: 32,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+            );
+          },
         ),
       ),
       body: Container(
-        decoration: const BoxDecoration(gradient: AppStyles.authGradient),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade700, Colors.blue.shade900],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Image.asset(
-                    'assets/images/app_logo.png',
-                    width: 70,
-                    height: 70,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                const SizedBox(height: 12),
                 _buildInputField(_nameController, 'Name', Icons.person),
                 const SizedBox(height: 10),
-                _buildInputField(_usernameController, 'Username', Icons.alternate_email),
+                _buildInputField(
+                    _usernameController, 'Username', Icons.alternate_email),
                 const SizedBox(height: 10),
-                _buildInputField(_emailController, 'Email', Icons.email,
-                    keyboardType: TextInputType.emailAddress),
-                const SizedBox(height: 10),
-                _buildInputField(_passwordController, 'Password', Icons.lock,
-                    obscureText: true),
-                const SizedBox(height: 10),
-                const Text('Age', style: AppStyles.label),
-                Text(
-                  '${_age.round()} years',
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                ),
+                Text('Age: ${_age.round()}',
+                    style: const TextStyle(color: Colors.white, fontSize: 18)),
                 Slider(
                   value: _age,
                   min: 21,
                   max: 100,
                   divisions: 79,
-                  activeColor: Colors.white,
-                  inactiveColor: Colors.white54,
-                  onChanged: (value) => setState(() => _age = value),
+                  activeColor: Colors.blue.shade600,
+                  inactiveColor: Colors.blue.shade300,
+                  onChanged: (double value) {
+                    setState(() {
+                      _age = value;
+                    });
+                  },
                 ),
                 const SizedBox(height: 10),
                 _buildCountryDropdown(),
-                const SizedBox(height: 15),
-                const Text('Select Your Habits', style: AppStyles.label),
                 const SizedBox(height: 10),
+                const Text('Select Your Habits',
+                    style: TextStyle(color: Colors.white, fontSize: 18)),
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
                   children: availableHabits.map((habit) {
                     final isSelected = selectedHabits.contains(habit);
                     return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          if (isSelected) {
-                            selectedHabits.remove(habit);
-                          } else {
-                            selectedHabits.add(habit);
-                          }
-                        });
-                      },
+                      onTap: () => null,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppStyles.primaryBlue : Colors.white,
+                          color:
+                              isSelected ? Colors.blue.shade600 : Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white),
+                          border: Border.all(color: Colors.blue.shade700),
                         ),
                         child: Text(
                           habit,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : AppStyles.primaryBlue,
-                            fontWeight: FontWeight.w600,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.blue.shade700,
                           ),
                         ),
                       ),
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 25),
+                const SizedBox(height: 20),
                 Center(
                   child: ElevatedButton(
                     onPressed: _register,
-                    style: AppStyles.primaryButton,
-                    child: const Text(
-                      'Sign Up',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue.shade600,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 80, vertical: 15),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Center(
-                  child: TextButton(
-                    onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
                     child: const Text(
-                      'Already have an account? Login',
-                      style: TextStyle(color: Colors.white),
+                      'Register',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -257,20 +209,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildInputField(
-    TextEditingController controller,
-    String hint,
-    IconData icon, {
-    bool obscureText = false,
-    TextInputType? keyboardType,
-  }) {
+      TextEditingController controller, String hint, IconData icon) {
     return Container(
-      decoration: AppStyles.inputBox,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+      ),
       child: TextField(
         controller: controller,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
-        textInputAction: TextInputAction.next,
-        decoration: AppStyles.inputDecoration(hint: hint, icon: icon),
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: Colors.blue.shade700),
+          hintText: hint,
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        ),
       ),
     );
   }
@@ -278,19 +231,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _buildCountryDropdown() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: AppStyles.inputBox,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+      ),
       child: DropdownButton<String>(
-        value: _countries.contains(_country) ? _country : null,
-        hint: const Text('Select country'),
-        icon: const Icon(Icons.arrow_drop_down, color: AppStyles.primaryBlue),
+        value: _country,
+        icon: Icon(Icons.arrow_drop_down, color: Colors.blue.shade700),
         isExpanded: true,
         underline: const SizedBox(),
-        items: _countries.map((value) {
-          return DropdownMenuItem<String>(value: value, child: Text(value));
+        items: _countries.map((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value),
+          );
         }).toList(),
         onChanged: (newValue) {
-          if (newValue == null) return;
-          setState(() => _country = newValue);
+          setState(() {
+            _country = newValue!;
+          });
         },
       ),
     );

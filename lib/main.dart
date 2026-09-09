@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
-
+import 'register_screen.dart'; // Dodan nedostajući import
 
 void main() {
   runApp(HabitTrackerApp());
@@ -10,9 +10,8 @@ class HabitTrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-     debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: false,
       title: 'Habitt',
-      // ADDED FOR TASK 1: named navigation routes.
       initialRoute: '/login',
       routes: {
         '/login': (context) => const LoginScreen(),

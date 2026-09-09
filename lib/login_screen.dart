@@ -1,159 +1,165 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'app_styles.dart';
+import 'habit_tracker_screen.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+  // Default credentials
+  final String defaultUsername = 'testuser';
+  final String defaultPassword = 'password123';
 
-  // ADDED FOR TASK 4: validate required fields and email format.
-  bool _validateForm() {
-    final email = _emailController.text.trim();
-    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-
-    if (email.isEmpty || _passwordController.text.isEmpty) {
-      _showMessage('Please enter your email and password.');
-      return false;
-    }
-
-    if (!emailRegex.hasMatch(email)) {
-      _showMessage('Please enter a valid email address.');
-      return false;
-    }
-
-    return true;
-  }
-
-  // ADDED FOR TASK 4: compare entered credentials with SharedPreferences.
-  Future<void> _authenticateUser() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final storedEmail = prefs.getString('user_email');
-      final storedPassword = prefs.getString('user_password');
-
-      final email = _emailController.text.trim().toLowerCase();
-      final password = _passwordController.text;
-
-      if (storedEmail == null || storedPassword == null) {
-        _showMessage('No registered account found. Please sign up first.');
-        return;
-      }
-
-      if (email == storedEmail && password == storedPassword) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login successful!')),
-        );
-      } else {
-        _showMessage('Incorrect email or password.');
-      }
-    } catch (error) {
-      _showMessage('Could not access stored account data.');
-    }
-  }
-
-  // ADDED FOR TASK 4: combine validation and authentication.
   void _login() {
-    if (_validateForm()) {
-      _authenticateUser();
-    }
-  }
+    // The login logic goes here
+    print("login logic here");
 
-  void _showMessage(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    final username = _usernameController.text;
+    final password = _passwordController.text;
+
+    if (username == defaultUsername && password == defaultPassword) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HabitTrackerScreen(username: username),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(gradient: AppStyles.authGradient),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade700, Colors.blue.shade900],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset(
-                  'assets/images/app_logo.png',
-                  width: 86,
-                  height: 86,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(height: 16),
-                const Text('Habitt', style: AppStyles.title),
-                const SizedBox(height: 30),
-                _buildInputField(
-                  _emailController,
-                  'Enter Email',
-                  Icons.email,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 20),
-                _buildInputField(
-                  _passwordController,
-                  'Enter Password',
-                  Icons.lock,
-                  obscureText: true,
-                ),
-                const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: _login,
-                  style: AppStyles.primaryButton,
-                  child: const Text(
-                    'Log in',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                const Text(
+                  'Habitt',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 15),
-                TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/signup'),
+                const SizedBox(height: 30),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: TextField(
+                    controller: _usernameController,
+                    decoration: InputDecoration(
+                      prefixIcon:
+                          Icon(Icons.email, color: Colors.blue.shade700),
+                      hintText: 'Enter Username',
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 15),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: TextField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.lock, color: Colors.blue.shade700),
+                      hintText: 'Enter Password',
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 15),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      // Logic for forgot password can be added here
+                    },
+                    child: const Text(
+                      'Forgot password?',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade600,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 80, vertical: 15),
+                  ),
                   child: const Text(
-                    "Don't have an account? Sign Up",
-                    style: TextStyle(color: Colors.white),
+                    'Log in',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'or',
+                  style: TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 10),
+                OutlinedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const RegisterScreen()),
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.white),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 70, vertical: 15),
+                  ),
+                  child: const Text(
+                    'Sign up',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildInputField(
-    TextEditingController controller,
-    String hint,
-    IconData icon, {
-    bool obscureText = false,
-    TextInputType? keyboardType,
-  }) {
-    return Container(
-      decoration: AppStyles.inputBox,
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
-        textInputAction: TextInputAction.next,
-        decoration: AppStyles.inputDecoration(hint: hint, icon: icon),
       ),
     );
   }

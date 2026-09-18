@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'add_habit_screen.dart';
+
 
 class HabitTrackerScreen extends StatefulWidget {
   final String username;
@@ -188,6 +190,16 @@ class _HabitTrackerScreenState extends State<HabitTrackerScreen> {
           : null,
     );
   }
+
+    onPressed: () {
+   Navigator.push(
+       context,
+       MaterialPageRoute(
+           builder: (context) => AddHabitScreen(),
+       ),
+   );
+},
+
 
   Widget _buildHabitCard(String title, Color color,
       {bool isCompleted = false}) {

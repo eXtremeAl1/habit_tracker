@@ -140,6 +140,27 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  // Return the selected habits to the main list screen.
+                  Navigator.pop(
+                    context,
+                    Map<String, String>.from(selectedHabitsMap),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: Colors.blue.shade700),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: Text(
+                  'Done - Back to List',
+                  style: TextStyle(color: Colors.blue.shade700),
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
             Expanded(
               child: ListView(
